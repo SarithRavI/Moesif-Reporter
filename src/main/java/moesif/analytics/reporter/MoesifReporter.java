@@ -19,7 +19,7 @@ public class MoesifReporter implements MetricReporter {
     private static final Logger log = LoggerFactory.getLogger(MoesifReporter.class);
     private final Map<String,String> properties;
     public MoesifReporter(Map<String, String> properties) {
-        // String ID = "eyJhcHAiOiI0NDI6Mzk4IiwidmVyIjoiMi4wIiwib3JnIjoiMjkxOjM1MSIsImlhdCI6MTY2MTk5MDQwMH0.Mj2x1Y2unzlmzYb9qLRmAtvE2STtxV7qv9uZSdQLIl4";
+
         String ID = "eyJhcHAiOiIxMDUxOjI1NSIsInZlciI6IjIuMCIsIm9yZyI6IjM1MToyNzciLCJpYXQiOjE2NjcyNjA4MDB9.rPbXw_lU6E5-5Ws-DG2uhiIEIecTMBtkQpJpSBATt5o";
 
         client = new MoesifAPIClient(ID);
@@ -29,6 +29,8 @@ public class MoesifReporter implements MetricReporter {
         this.properties = properties;
     }
 
+
+    // TODO: override createCounter or createCounterMetric ??
     @Override
     public CounterMetric createCounterMetric(String name, MetricSchema metricSchema) throws MetricCreationException {
         MoesifLogCounter logCounterMetric = new MoesifLogCounter(name, metricSchema,api,this.properties);
@@ -45,9 +47,6 @@ public class MoesifReporter implements MetricReporter {
     public Map<String, String> getConfiguration() {
         return null;
     }
-
-
-
 
 
 }

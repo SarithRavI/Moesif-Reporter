@@ -9,9 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.am.analytics.publisher.exception.MetricReportingException;
 import org.wso2.am.analytics.publisher.reporter.CounterMetric;
+import org.wso2.am.analytics.publisher.reporter.GenericInputValidator;
 import org.wso2.am.analytics.publisher.reporter.MetricEventBuilder;
 import org.wso2.am.analytics.publisher.reporter.MetricSchema;
-import org.wso2.am.analytics.publisher.reporter.cloud.DefaultFaultMetricEventBuilder;
 
 import java.io.IOException;
 import java.net.URL;
@@ -69,9 +69,9 @@ public class MoesifLogCounter implements CounterMetric {
     public MetricEventBuilder getEventBuilder() {
         switch (schema) {
             case RESPONSE:
-                return new MoesifResponseMetricEventBuilder();
+                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.RESPONSE));
             case ERROR:
-                return new DefaultFaultMetricEventBuilder();
+                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.ERROR));
             default:
                 // will not happen
                 return null;

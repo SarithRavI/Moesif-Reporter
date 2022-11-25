@@ -4,12 +4,9 @@ import org.wso2.am.analytics.publisher.exception.MetricReportingException;
 import org.wso2.am.analytics.publisher.reporter.AbstractMetricEventBuilder;
 import org.wso2.am.analytics.publisher.reporter.MetricEventBuilder;
 import org.wso2.am.analytics.publisher.reporter.MetricSchema;
-import org.wso2.am.analytics.publisher.reporter.cloud.DefaultInputValidator;
-import org.wso2.am.analytics.publisher.reporter.cloud.DefaultResponseMetricEventBuilder;
+import org.wso2.am.analytics.publisher.reporter.GenericInputValidator;
 import org.wso2.am.analytics.publisher.util.Constants;
 import org.wso2.am.analytics.publisher.util.EventMapAttributeFilter;
-import org.wso2.am.analytics.publisher.util.UserAgentParser;
-import ua_parser.Client;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +17,7 @@ public class MoesifResponseMetricEventBuilder extends AbstractMetricEventBuilder
     private Boolean isBuilt = false;
 
     public MoesifResponseMetricEventBuilder(){
-        requiredAttributes = DefaultInputValidator.getInstance().getEventProperties(MetricSchema.RESPONSE);
+        requiredAttributes = GenericInputValidator.getInstance().getEventProperties(MetricSchema.RESPONSE);
         eventMap = new HashMap<>();
     }
 
@@ -34,8 +31,6 @@ public class MoesifResponseMetricEventBuilder extends AbstractMetricEventBuilder
         if (!isBuilt) {
             // util function to filter required attributes
             eventMap = EventMapAttributeFilter.getInstance().filter(eventMap,requiredAttributes);
-
-            eventMap.put(Constants.EVENT_TYPE, Constants.RESPONSE_EVENT_TYPE);
 
             isBuilt = true;
         }
