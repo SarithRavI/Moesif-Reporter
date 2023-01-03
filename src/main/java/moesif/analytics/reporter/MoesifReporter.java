@@ -20,7 +20,7 @@ public class MoesifReporter extends AbstractMetricReporter {
     private final Map<String,String> properties;
     public MoesifReporter(Map<String, String> properties) throws MetricCreationException {
         super(properties);
-        String ID = "eyJhcHAiOiIxMDUxOjI1NSIsInZlciI6IjIuMCIsIm9yZyI6IjM1MToyNzciLCJpYXQiOjE2NjcyNjA4MDB9.rPbXw_lU6E5-5Ws-DG2uhiIEIecTMBtkQpJpSBATt5o";
+        String ID = "";
         client = new MoesifAPIClient(ID);
         api = APIController.getInstance();
         log.info("Successfully initialized");
