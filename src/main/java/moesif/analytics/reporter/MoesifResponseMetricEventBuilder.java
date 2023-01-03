@@ -5,7 +5,6 @@ import org.wso2.am.analytics.publisher.reporter.AbstractMetricEventBuilder;
 import org.wso2.am.analytics.publisher.reporter.MetricEventBuilder;
 import org.wso2.am.analytics.publisher.reporter.MetricSchema;
 import org.wso2.am.analytics.publisher.reporter.GenericInputValidator;
-import org.wso2.am.analytics.publisher.util.Constants;
 import org.wso2.am.analytics.publisher.util.EventMapAttributeFilter;
 
 import java.util.HashMap;
@@ -27,7 +26,7 @@ public class MoesifResponseMetricEventBuilder extends AbstractMetricEventBuilder
     }
 
     @Override
-    protected Map<String, Object> buildEvent() throws MetricReportingException {
+    protected Map<String, Object> buildEvent(){
         if (!isBuilt) {
             // util function to filter required attributes
             eventMap = EventMapAttributeFilter.getInstance().filter(eventMap,requiredAttributes);

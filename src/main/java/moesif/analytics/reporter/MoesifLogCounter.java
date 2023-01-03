@@ -97,9 +97,6 @@ public class MoesifLogCounter implements CounterMetric {
         String jsonString = gson.toJson(data);
         String reqBody =  jsonString.replaceAll("[\r\n]", "");
 
-        String propertiesStr = gson.toJson(this.properties).replaceAll("[\r\n]", "");
-
-        reqBody = reqBody +"\n" +propertiesStr;
         //      Preprocessing data
         final URL uri = new URL((String) data.get(MoesifConstants.DESTINATION));
         final String hostName = uri.getHost();
