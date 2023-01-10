@@ -21,8 +21,6 @@ import java.util.Map;
 
 public class MoesifLogCounter implements CounterMetric {
 
-
-
     private static final Logger log = LoggerFactory.getLogger(MoesifLogCounter.class);
     private String name;
     private MetricSchema schema;
