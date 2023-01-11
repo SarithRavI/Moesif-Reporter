@@ -122,7 +122,7 @@ public class MoesifKeyRetriever {
     private static synchronized void updateMoesifKey(String response) {
         Gson gson = new Gson();
         String json = response;
-        TypeToken<MoesifKeyEntry> collectionType = new TypeToken() {
+        TypeToken<MoesifKeyEntry> collectionType = new TypeToken<MoesifKeyEntry>() {
         };
         MoesifKeyEntry newKey = gson.fromJson(json, collectionType);
         orgID_moesifKeyMap.put(newKey.getOrganization_id(), newKey.getMoesif_key());
@@ -132,7 +132,7 @@ public class MoesifKeyRetriever {
     private static synchronized  void updateMap(String response) {
         Gson gson = new Gson();
         String json = response;
-        TypeToken<Collection<MoesifKeyEntry>> collectionType = new TypeToken() {
+        TypeToken<Collection<MoesifKeyEntry>> collectionType = new TypeToken<Collection<MoesifKeyEntry>>() {
         };
         Collection<MoesifKeyEntry> newKeys = gson.fromJson(json, collectionType);
 
