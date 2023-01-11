@@ -15,9 +15,6 @@ public class MoesifReporter extends AbstractMetricReporter {
     private final Map<String,String> properties;
     public MoesifReporter(Map<String, String> properties) throws MetricCreationException{
         super(properties);
-        String ID = "";
-
-        log.info("Successfully initialized");
         this.properties = properties;
         MoesifKeyRetriever keyRetriever = new MoesifKeyRetriever();
     }
