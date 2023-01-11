@@ -1,9 +1,9 @@
 package moesif.analytics.reporter;
 
 import com.google.gson.Gson;
+import com.moesif.api.MoesifAPIClient;
 import com.moesif.api.controllers.APIController;
 import com.moesif.api.models.*;
-import java.net.URI;
 import moesif.analytics.reporter.utils.MoesifConstants;
 import moesif.analytics.reporter.utils.UUIDCreator;
 import org.slf4j.Logger;
@@ -32,10 +32,9 @@ public class MoesifLogCounter implements CounterMetric {
     private APIController api;
     private UUIDCreator uuidCreator;
 
-    public MoesifLogCounter(String name, MetricSchema schema, APIController api, Map<String, String> properties) {
+    public MoesifLogCounter(String name, MetricSchema schema, Map<String, String> properties) {
         this.name = name;
         this.schema = schema;
-        this.api = api;
         this.gson = new Gson();
         this.uuidCreator = new UUIDCreator();
         this.properties = properties;
@@ -81,7 +80,22 @@ public class MoesifLogCounter implements CounterMetric {
 
         // get the org id from the event
         String org_id = (String) event.get(MoesifConstants.ORGANIZATION_ID);
-        // fetch the moesif key from the ms
+        // fetch the moesif key from orgID_moesifKeyMap
+        String moesif_key;
+        try {
+             moesif_key = MoesifKeyRetriever.orgID_moesifKeyMap.get(org_id);
+        }
+        catch(Throwable e){
+            // In case where the key is unavailable refresh the map
+            MoesifKeyRetriever.initOrRefreshOrgIDMoesifKeyMap();
+            moesif_key = MoesifKeyRetriever.orgID_moesifKeyMap.get(org_id);
+        }
+        if (moesif_key == null){
+            moesif_key = MoesifKeyRetriever.getMoesifKey(org_id);
+        }
+        // init moesif client
+        MoesifAPIClient client = new MoesifAPIClient(moesif_key);
+        APIController api = APIController.getInstance();
         switch (schema) {
             case RESPONSE:
                 api.createEvent(buildEventResponse(event));
