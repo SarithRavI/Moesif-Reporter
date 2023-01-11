@@ -22,7 +22,7 @@ public class MoesifKeyRetriever {
         initOrRefreshOrgIDMoesifKeyMap();
     }
 
-    public static void callListResource() throws IOException{
+    public static void callListResource() throws IOException {
         URL obj = new URL(MoesifMicroserviceConstants.LIST_URL);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
@@ -40,10 +40,11 @@ public class MoesifKeyRetriever {
 
             updateMap(response.toString());
         } else {
-            throw new IOException("Getting "+responseCode+" from the microservice");
+            throw new IOException("Getting " + responseCode + " from the microservice");
         }
     }
-    public static String callDetailResource(String orgID) throws IOException{
+
+    public static String callDetailResource(String orgID) throws IOException {
         StringBuffer response = new StringBuffer();
         String url = MoesifMicroserviceConstants.DETAIL_URL + "?" + MoesifMicroserviceConstants.QUERY_PARAM + "=" +
                 orgID;
@@ -81,8 +82,7 @@ public class MoesifKeyRetriever {
         String response;
         try {
             response = callDetailResource(orgID);
-        }
-        catch (IOException ex){
+        } catch (IOException ex) {
             System.out.println(ex.getMessage());
             // TODO: Add retry mechanism
             response = null;
@@ -90,22 +90,25 @@ public class MoesifKeyRetriever {
         return response;
     }
 
-    private synchronized static void updateMoesifKey(String response) {
+    private static synchronized void updateMoesifKey(String response) {
         Gson gson = new Gson();
         String json = response;
-        TypeToken<MoesifKeyEntry> collectionType = new TypeToken(){};
+        TypeToken<MoesifKeyEntry> collectionType = new TypeToken() {
+        };
         MoesifKeyEntry newKey = gson.fromJson(json, collectionType);
         orgID_moesifKeyMap.put(newKey.getOrganization_id(), newKey.getMoesif_key());
 
     }
-    private synchronized static void updateMap(String response){
+
+    private static synchronized  void updateMap(String response) {
         Gson gson = new Gson();
         String json = response;
-        TypeToken<Collection<MoesifKeyEntry>> collectionType = new TypeToken(){};
+        TypeToken<Collection<MoesifKeyEntry>> collectionType = new TypeToken() {
+        };
         Collection<MoesifKeyEntry> newKeys = gson.fromJson(json, collectionType);
 
         MoesifKeyEntry[] newKeysArr = (MoesifKeyEntry[]) newKeys.toArray();
-        for(MoesifKeyEntry entry : newKeysArr){
+        for (MoesifKeyEntry entry : newKeysArr) {
             orgID_moesifKeyMap.put(entry.getOrganization_id(), entry.getMoesif_key());
         }
     }

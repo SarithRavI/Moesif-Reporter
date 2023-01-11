@@ -123,18 +123,6 @@ public class MoesifLogCounter implements CounterMetric {
         reqHeaders.put("Content-Type", MoesifConstants.MOESIF_CONTENT_TYPE_HEADER);
         reqHeaders.put("Host", hostName);
 
-//        reqHeaders.put("Connection", "Keep-Alive");
-//        reqHeaders.put("Content-Length", "126");
-//        reqHeaders.put("Accept-Encoding", "gzip");
-
-//         Following headers are applicable for every request.
-//          accept
-//          connection
-
-//         Following headers are applicable if payload is passed along the req obj.
-//          content-length
-//          content-encoding
-
         Map<String, String> rspHeaders = new HashMap<String, String>();
 
         rspHeaders.put("Vary", "Accept-Encoding");
