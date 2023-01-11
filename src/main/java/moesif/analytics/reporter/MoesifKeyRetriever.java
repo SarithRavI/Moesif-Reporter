@@ -69,22 +69,51 @@ public class MoesifKeyRetriever {
         return response.toString();
     }
 
-    public static void initOrRefreshOrgIDMoesifKeyMap() {
+    public synchronized static void initOrRefreshOrgIDMoesifKeyMap() {
+        int attempts = MoesifMicroserviceConstants.NUM_RETRY_ATTEMPTS;
         try {
             callListResource();
         } catch (IOException ex) {
+            // TODO: Separate retry logic to a separate class.
             System.out.println(ex.getMessage());
-            // TODO: Add retry mechanism
+            while(attempts >0){
+                attempts--;
+                try {
+                    Thread.sleep(MoesifMicroserviceConstants.TIME_TO_WAIT);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    callListResource();
+                } catch (IOException e) {
+                    System.out.println("Retried and got: "+e.getMessage());
+                }
+            }
         }
     }
 
-    public static String getMoesifKey(String orgID) {
+    public synchronized static String getMoesifKey(String orgID) {
         String response;
+        int attempts = MoesifMicroserviceConstants.NUM_RETRY_ATTEMPTS;
         try {
             response = callDetailResource(orgID);
         } catch (IOException ex) {
+            // TODO: Separate retry logic to a separate class.
             System.out.println(ex.getMessage());
-            // TODO: Add retry mechanism
+            while(attempts >0){
+                attempts--;
+                try {
+                    Thread.sleep(MoesifMicroserviceConstants.TIME_TO_WAIT);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    response = callDetailResource(orgID);
+                    return response;
+                } catch (IOException e) {
+                    System.out.println("Retried and got: "+e.getMessage());
+                }
+            }
             response = null;
         }
         return response;
