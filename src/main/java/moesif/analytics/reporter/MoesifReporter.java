@@ -2,6 +2,7 @@ package moesif.analytics.reporter;
 
 import com.moesif.api.MoesifAPIClient;
 import com.moesif.api.controllers.APIController;
+import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.am.analytics.publisher.exception.MetricCreationException;
@@ -18,13 +19,14 @@ public class MoesifReporter extends AbstractMetricReporter {
 
     private static final Logger log = LoggerFactory.getLogger(MoesifReporter.class);
     private final Map<String,String> properties;
-    public MoesifReporter(Map<String, String> properties) throws MetricCreationException {
+    public MoesifReporter(Map<String, String> properties) throws MetricCreationException{
         super(properties);
         String ID = "";
         client = new MoesifAPIClient(ID);
         api = APIController.getInstance();
         log.info("Successfully initialized");
         this.properties = properties;
+        MoesifKeyRetriever keyRetriever = new MoesifKeyRetriever();
     }
 
     @Override
@@ -43,6 +45,7 @@ public class MoesifReporter extends AbstractMetricReporter {
     protected TimerMetric createTimer(String s) {
         return null;
     }
+
 
 
 }
