@@ -1,9 +1,9 @@
 package moesif.analytics.reporter;
 
 import com.google.gson.Gson;
+import com.moesif.api.MoesifAPIClient;
 import com.moesif.api.controllers.APIController;
 import com.moesif.api.models.*;
-import java.net.URI;
 import moesif.analytics.reporter.utils.MoesifConstants;
 import moesif.analytics.reporter.utils.UUIDCreator;
 import org.slf4j.Logger;
@@ -32,10 +32,9 @@ public class MoesifLogCounter implements CounterMetric {
     private APIController api;
     private UUIDCreator uuidCreator;
 
-    public MoesifLogCounter(String name, MetricSchema schema, APIController api, Map<String, String> properties) {
+    public MoesifLogCounter(String name, MetricSchema schema, Map<String, String> properties) {
         this.name = name;
         this.schema = schema;
-        this.api = api;
         this.gson = new Gson();
         this.uuidCreator = new UUIDCreator();
         this.properties = properties;
@@ -47,7 +46,7 @@ public class MoesifLogCounter implements CounterMetric {
         try {
             publish(event);
         } catch (Throwable e) {
-            throw new RuntimeException("Moesif: Not publishing event");
+            throw new RuntimeException("Moesif: Not publishing event " + e.getMessage());
         }
         return 0;
     }
@@ -77,11 +76,25 @@ public class MoesifLogCounter implements CounterMetric {
         }
     }
 
-    public void publish(Map<String, Object> event) throws Throwable {
+    public void publish(Map<String, Object> event) throws Throwable, MetricReportingException {
 
         // get the org id from the event
         String org_id = (String) event.get(MoesifConstants.ORGANIZATION_ID);
-        // fetch the moesif key from the ms
+        // fetch the moesif key from orgID_moesifKeyMap
+        String moesif_key;
+        if (MoesifKeyRetriever.orgID_moesifKeyMap.containsKey(org_id)) {
+            moesif_key = MoesifKeyRetriever.orgID_moesifKeyMap.get(org_id);
+        } else {
+            moesif_key = MoesifKeyRetriever.getMoesifKey(org_id);
+            if (moesif_key == null) {
+                throw new MetricReportingException(
+                        "Corresponding Moesif key for organization" + org_id + "can't be found.");
+            }
+        }
+
+        // init moesif client
+        MoesifAPIClient client = new MoesifAPIClient(moesif_key);
+        APIController api = APIController.getInstance();
         switch (schema) {
             case RESPONSE:
                 api.createEvent(buildEventResponse(event));
@@ -108,18 +121,6 @@ public class MoesifLogCounter implements CounterMetric {
                 (String) data.getOrDefault(MoesifConstants.USER_AGENT_HEADER, MoesifConstants.UNKNOWN_VALUE));
         reqHeaders.put("Content-Type", MoesifConstants.MOESIF_CONTENT_TYPE_HEADER);
         reqHeaders.put("Host", hostName);
-
-//        reqHeaders.put("Connection", "Keep-Alive");
-//        reqHeaders.put("Content-Length", "126");
-//        reqHeaders.put("Accept-Encoding", "gzip");
-
-//         Following headers are applicable for every request.
-//          accept
-//          connection
-
-//         Following headers are applicable if payload is passed along the req obj.
-//          content-length
-//          content-encoding
 
         Map<String, String> rspHeaders = new HashMap<String, String>();
 
