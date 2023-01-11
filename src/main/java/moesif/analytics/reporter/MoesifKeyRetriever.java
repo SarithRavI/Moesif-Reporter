@@ -2,6 +2,8 @@ package moesif.analytics.reporter;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.github.cdimascio.dotenv.Dotenv;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -13,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import moesif.analytics.reporter.utils.MoesifKeyEntry;
 import moesif.analytics.reporter.utils.MoesifMicroserviceConstants;
+import org.apache.commons.codec.binary.Base64;
 
 public class MoesifKeyRetriever {
     static ConcurrentMap<String, String> orgID_moesifKeyMap;
@@ -24,8 +27,14 @@ public class MoesifKeyRetriever {
 
     public static void callListResource() throws IOException {
         URL obj = new URL(MoesifMicroserviceConstants.LIST_URL);
+        Dotenv dotenv =  Dotenv.configure().load();
+        String auth = dotenv.get("MS_USERNAME") + ":" + dotenv.get("MS_PASSWORD");
+        byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.UTF_8));
+        String authHeaderValue = "Basic " + new String(encodedAuth);
+
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
+        con.setRequestProperty("Authorization", authHeaderValue);
         con.setRequestProperty("Content-Type", MoesifMicroserviceConstants.CONTENT_TYPE);
         int responseCode = con.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK) {
@@ -49,9 +58,15 @@ public class MoesifKeyRetriever {
         String url = MoesifMicroserviceConstants.DETAIL_URL + "?" + MoesifMicroserviceConstants.QUERY_PARAM + "=" +
                 orgID;
         URL obj = new URL(url);
+        Dotenv dotenv =  Dotenv.configure().load();
+        String auth = dotenv.get("MS_USERNAME") + ":" + dotenv.get("MS_PASSWORD");
+        byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.UTF_8));
+        String authHeaderValue = "Basic " + new String(encodedAuth);
+
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("Content-Type", MoesifMicroserviceConstants.CONTENT_TYPE);
+        con.setRequestProperty("Authorization", authHeaderValue);
         int responseCode = con.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK) {
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -122,7 +137,7 @@ public class MoesifKeyRetriever {
     private static synchronized void updateMoesifKey(String response) {
         Gson gson = new Gson();
         String json = response;
-        TypeToken<MoesifKeyEntry> collectionType = new TypeToken() {
+        TypeToken<MoesifKeyEntry> collectionType = new TypeToken<MoesifKeyEntry>() {
         };
         MoesifKeyEntry newKey = gson.fromJson(json, collectionType);
         orgID_moesifKeyMap.put(newKey.getOrganization_id(), newKey.getMoesif_key());
@@ -132,7 +147,7 @@ public class MoesifKeyRetriever {
     private static synchronized  void updateMap(String response) {
         Gson gson = new Gson();
         String json = response;
-        TypeToken<Collection<MoesifKeyEntry>> collectionType = new TypeToken() {
+        TypeToken<Collection<MoesifKeyEntry>> collectionType = new TypeToken<Collection<MoesifKeyEntry>>() {
         };
         Collection<MoesifKeyEntry> newKeys = gson.fromJson(json, collectionType);
 

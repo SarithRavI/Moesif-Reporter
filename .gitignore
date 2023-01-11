@@ -1,9 +1,8 @@
 # Compiled class file
 *.class
-
 # Log file
 *.log
-
+.env
 # BlueJ files
 *.ctxt
 
