@@ -65,14 +65,14 @@ public class MoesifLogCounter implements CounterMetric {
     public MetricEventBuilder getEventBuilder() {
         switch (schema) {
             case RESPONSE:
-                return new MoesifResponseMetricEventBuilder(
-                        GenericInputValidator.getInstance().getEventProperties(MetricSchema.RESPONSE));
-            case ERROR:
-                return new MoesifResponseMetricEventBuilder(
-                        GenericInputValidator.getInstance().getEventProperties(MetricSchema.ERROR));
             default:
-                // will not happen
-                return null;
+                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.RESPONSE));
+            case ERROR:
+                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.ERROR));
+            case CHOREO_RESPONSE:
+                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.CHOREO_RESPONSE));
+            case CHOREO_ERROR:
+                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.CHOREO_ERROR));
         }
     }
 
@@ -97,9 +97,11 @@ public class MoesifLogCounter implements CounterMetric {
         APIController api = APIController.getInstance();
         switch (schema) {
             case RESPONSE:
+            case CHOREO_RESPONSE:
                 api.createEvent(buildEventResponse(event));
                 break;
             case ERROR:
+            case CHOREO_ERROR:
                 api.createEvent(buildEventFault(event));
                 break;
         }
