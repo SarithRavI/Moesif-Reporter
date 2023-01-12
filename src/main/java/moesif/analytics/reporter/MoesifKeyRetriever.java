@@ -23,7 +23,6 @@ public class MoesifKeyRetriever {
 
     public MoesifKeyRetriever() {
         orgID_moesifKeyMap = new ConcurrentHashMap();
-        initOrRefreshOrgIDMoesifKeyMap();
     }
 
     public static void callListResource() throws IOException {
