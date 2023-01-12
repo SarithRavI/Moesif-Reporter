@@ -21,15 +21,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MoesifLogCounter implements CounterMetric {
-
-    // uses to create a UUID (userID) from the userIP
     static final String UUIDNameSpace = MoesifConstants.NAMESPACE_URL;
     private static final Logger log = LoggerFactory.getLogger(MoesifLogCounter.class);
     private final Gson gson;
     private final Map<String, String> properties;
     private String name;
     private MetricSchema schema;
-    private APIController api;
     private UUIDCreator uuidCreator;
 
     public MoesifLogCounter(String name, MetricSchema schema, Map<String, String> properties) {
@@ -88,7 +85,7 @@ public class MoesifLogCounter implements CounterMetric {
             moesif_key = MoesifKeyRetriever.getMoesifKey(org_id);
             if (moesif_key == null) {
                 throw new MetricReportingException(
-                        "Corresponding Moesif key for organization" + org_id + "can't be found.");
+                        "Corresponding Moesif key for organization " + org_id + " can't be found.");
             }
         }
 
