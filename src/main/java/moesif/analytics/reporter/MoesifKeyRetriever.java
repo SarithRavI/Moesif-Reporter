@@ -149,8 +149,7 @@ public class MoesifKeyRetriever {
         };
         Collection<MoesifKeyEntry> newKeys = gson.fromJson(json, collectionType);
 
-        MoesifKeyEntry[] newKeysArr = (MoesifKeyEntry[]) newKeys.toArray();
-        for (MoesifKeyEntry entry : newKeysArr) {
+        for (MoesifKeyEntry entry : newKeys) {
             orgID_moesifKeyMap.put(entry.getOrganization_id(), entry.getMoesif_key());
         }
     }
