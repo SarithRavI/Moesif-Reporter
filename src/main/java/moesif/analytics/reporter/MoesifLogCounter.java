@@ -29,7 +29,6 @@ public class MoesifLogCounter implements CounterMetric {
     private final Map<String, String> properties;
     private String name;
     private MetricSchema schema;
-    private APIController api;
     private UUIDCreator uuidCreator;
 
     public MoesifLogCounter(String name, MetricSchema schema, Map<String, String> properties) {
@@ -65,19 +64,22 @@ public class MoesifLogCounter implements CounterMetric {
     public MetricEventBuilder getEventBuilder() {
         switch (schema) {
             case RESPONSE:
-                return new MoesifResponseMetricEventBuilder(
-                        GenericInputValidator.getInstance().getEventProperties(MetricSchema.RESPONSE));
-            case ERROR:
-                return new MoesifResponseMetricEventBuilder(
-                        GenericInputValidator.getInstance().getEventProperties(MetricSchema.ERROR));
             default:
-                // will not happen
-                return null;
+                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.RESPONSE));
+            case ERROR:
+                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.ERROR));
+            case CHOREO_RESPONSE:
+                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.CHOREO_RESPONSE));
+            case CHOREO_ERROR:
+                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.CHOREO_ERROR));
         }
     }
 
     public void publish(Map<String, Object> event) throws Throwable, MetricReportingException {
-
+        // if the orgID_moesifKeyMap is empty refresh it.
+        if(MoesifKeyRetriever.orgID_moesifKeyMap.isEmpty()){
+            MoesifKeyRetriever.initOrRefreshOrgIDMoesifKeyMap();
+        }
         // get the org id from the event
         String org_id = (String) event.get(MoesifConstants.ORGANIZATION_ID);
         // fetch the moesif key from orgID_moesifKeyMap
@@ -88,18 +90,20 @@ public class MoesifLogCounter implements CounterMetric {
             moesif_key = MoesifKeyRetriever.getMoesifKey(org_id);
             if (moesif_key == null) {
                 throw new MetricReportingException(
-                        "Corresponding Moesif key for organization" + org_id + "can't be found.");
+                        "Corresponding Moesif key for organization " + org_id + " can't be found.");
             }
         }
 
         // init moesif client
         MoesifAPIClient client = new MoesifAPIClient(moesif_key);
-        APIController api = APIController.getInstance();
+        APIController api = client.getAPI();
         switch (schema) {
             case RESPONSE:
+            case CHOREO_RESPONSE:
                 api.createEvent(buildEventResponse(event));
                 break;
             case ERROR:
+            case CHOREO_ERROR:
                 api.createEvent(buildEventFault(event));
                 break;
         }
