@@ -13,10 +13,11 @@ import java.util.Map;
 public class MoesifReporter extends AbstractMetricReporter {
     private static final Logger log = LoggerFactory.getLogger(MoesifReporter.class);
     private final Map<String,String> properties;
+    private final MoesifKeyRetriever keyRetriever;
     public MoesifReporter(Map<String, String> properties) throws MetricCreationException{
         super(properties);
         this.properties = properties;
-        MoesifKeyRetriever keyRetriever = new MoesifKeyRetriever();
+        keyRetriever =  MoesifKeyRetriever.getInstance();
     }
 
     @Override
@@ -26,7 +27,7 @@ public class MoesifReporter extends AbstractMetricReporter {
 
     @Override
     public CounterMetric createCounter(String name, MetricSchema metricSchema) throws MetricCreationException {
-        MoesifLogCounter logCounterMetric = new MoesifLogCounter(name, metricSchema,this.properties);
+        MoesifLogCounter logCounterMetric = new MoesifLogCounter(name, metricSchema,keyRetriever,this.properties);
 
         return logCounterMetric;
     }

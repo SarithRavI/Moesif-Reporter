@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.moesif.api.MoesifAPIClient;
 import com.moesif.api.controllers.APIController;
 import com.moesif.api.models.*;
+import java.util.concurrent.ConcurrentHashMap;
 import moesif.analytics.reporter.utils.MoesifConstants;
 import moesif.analytics.reporter.utils.UUIDCreator;
 import org.slf4j.Logger;
@@ -28,13 +29,15 @@ public class MoesifLogCounter implements CounterMetric {
     private String name;
     private MetricSchema schema;
     private UUIDCreator uuidCreator;
+    private MoesifKeyRetriever keyRetriever;
 
-    public MoesifLogCounter(String name, MetricSchema schema, Map<String, String> properties) {
+    public MoesifLogCounter(String name, MetricSchema schema, MoesifKeyRetriever keyRetriever, Map<String, String> properties) {
         this.name = name;
         this.schema = schema;
         this.gson = new Gson();
         this.uuidCreator = new UUIDCreator();
         this.properties = properties;
+        this.keyRetriever = keyRetriever;
     }
 
     @Override
@@ -75,18 +78,19 @@ public class MoesifLogCounter implements CounterMetric {
 
     public void publish(Map<String, Object> event) throws Throwable, MetricReportingException {
         // if the orgID_moesifKeyMap is empty refresh it.
-        if(MoesifKeyRetriever.orgID_moesifKeyMap.isEmpty()){
-            MoesifKeyRetriever.initOrRefreshOrgIDMoesifKeyMap();
+        ConcurrentHashMap<String,String> orgID_moesifKeyMap = keyRetriever.getMoesifKeyMap();
+        if(orgID_moesifKeyMap.isEmpty()){
+            keyRetriever.initOrRefreshOrgIDMoesifKeyMap();
         }
 
         // get the org id from the event
         String org_id = (String) event.get(MoesifConstants.ORGANIZATION_ID);
         // fetch the moesif key from orgID_moesifKeyMap
         String moesif_key;
-        if (MoesifKeyRetriever.orgID_moesifKeyMap.containsKey(org_id)) {
-            moesif_key = MoesifKeyRetriever.orgID_moesifKeyMap.get(org_id);
+        if (orgID_moesifKeyMap.containsKey(org_id)) {
+            moesif_key = orgID_moesifKeyMap.get(org_id);
         } else {
-            moesif_key = MoesifKeyRetriever.getMoesifKey(org_id);
+            moesif_key = keyRetriever.getMoesifKey(org_id);
             if (moesif_key == null) {
                 throw new MetricReportingException(
                         "Corresponding Moesif key for organization " + org_id + " can't be found.");
