@@ -2,7 +2,7 @@ package moesif.analytics.reporter;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.github.cdimascio.dotenv.Dotenv;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
@@ -22,7 +22,6 @@ public class MoesifKeyRetriever {
 
     public MoesifKeyRetriever() {
         orgID_moesifKeyMap = new ConcurrentHashMap();
-        initOrRefreshOrgIDMoesifKeyMap();
     }
 
     public static void callListResource() throws IOException {
@@ -135,9 +134,8 @@ public class MoesifKeyRetriever {
     private static synchronized void updateMoesifKey(String response) {
         Gson gson = new Gson();
         String json = response;
-        TypeToken<MoesifKeyEntry> collectionType = new TypeToken<MoesifKeyEntry>() {
-        };
-        MoesifKeyEntry newKey = gson.fromJson(json, collectionType);
+
+        MoesifKeyEntry newKey = gson.fromJson(json, MoesifKeyEntry.class);
         orgID_moesifKeyMap.put(newKey.getOrganization_id(), newKey.getMoesif_key());
 
     }
@@ -145,12 +143,10 @@ public class MoesifKeyRetriever {
     private static synchronized  void updateMap(String response) {
         Gson gson = new Gson();
         String json = response;
-        TypeToken<Collection<MoesifKeyEntry>> collectionType = new TypeToken<Collection<MoesifKeyEntry>>() {
-        };
+        Type collectionType = new TypeToken<Collection<MoesifKeyEntry>>() {}.getType();
         Collection<MoesifKeyEntry> newKeys = gson.fromJson(json, collectionType);
 
-        MoesifKeyEntry[] newKeysArr = (MoesifKeyEntry[]) newKeys.toArray();
-        for (MoesifKeyEntry entry : newKeysArr) {
+        for (MoesifKeyEntry entry : newKeys) {
             orgID_moesifKeyMap.put(entry.getOrganization_id(), entry.getMoesif_key());
         }
     }
