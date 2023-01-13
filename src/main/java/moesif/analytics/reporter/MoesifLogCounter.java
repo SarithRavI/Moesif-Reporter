@@ -43,7 +43,7 @@ public class MoesifLogCounter implements CounterMetric {
         try {
             publish(event);
         } catch (Throwable e) {
-            throw new RuntimeException("Moesif: Not publishing event " + e.getMessage());
+            throw new RuntimeException("Moesif: Not publishing event " + e.toString());
         }
         return 0;
     }
