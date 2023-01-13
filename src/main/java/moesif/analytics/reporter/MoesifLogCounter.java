@@ -29,7 +29,6 @@ public class MoesifLogCounter implements CounterMetric {
     private final Map<String, String> properties;
     private String name;
     private MetricSchema schema;
-    private APIController api;
     private UUIDCreator uuidCreator;
 
     public MoesifLogCounter(String name, MetricSchema schema, Map<String, String> properties) {
@@ -91,7 +90,7 @@ public class MoesifLogCounter implements CounterMetric {
             moesif_key = MoesifKeyRetriever.getMoesifKey(org_id);
             if (moesif_key == null) {
                 throw new MetricReportingException(
-                        "Corresponding Moesif key for organization" + org_id + "can't be found.");
+                        "Corresponding Moesif key for organization " + org_id + " can't be found.");
             }
         }
 
