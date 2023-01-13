@@ -12,14 +12,12 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <org.wso2.am.analytics.publisher.version>1.1.1-SNAPSHOT</org.wso2.am.analytics.publisher.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.wso2.am.analytics.publisher</groupId>
             <artifactId>org.wso2.am.analytics.publisher.client</artifactId>
-            <version>${org.wso2.am.analytics.publisher.version}</version>
         </dependency>
 
         <dependency>
