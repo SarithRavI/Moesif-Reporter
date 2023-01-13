@@ -97,7 +97,7 @@ public class MoesifLogCounter implements CounterMetric {
 
         // init moesif client
         MoesifAPIClient client = new MoesifAPIClient(moesif_key);
-        APIController api = APIController.getInstance();
+        APIController api = client.getAPI();
         switch (schema) {
             case RESPONSE:
             case CHOREO_RESPONSE:
