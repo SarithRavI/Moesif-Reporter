@@ -77,7 +77,10 @@ public class MoesifLogCounter implements CounterMetric {
     }
 
     public void publish(Map<String, Object> event) throws Throwable, MetricReportingException {
-
+        // if the orgID_moesifKeyMap is empty refresh it.
+        if(MoesifKeyRetriever.orgID_moesifKeyMap.isEmpty()){
+            MoesifKeyRetriever.initOrRefreshOrgIDMoesifKeyMap();
+        }
         // get the org id from the event
         String org_id = (String) event.get(MoesifConstants.ORGANIZATION_ID);
         // fetch the moesif key from orgID_moesifKeyMap
