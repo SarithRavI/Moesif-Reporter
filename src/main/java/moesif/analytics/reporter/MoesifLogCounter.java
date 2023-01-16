@@ -12,25 +12,20 @@ import java.util.Map;
 
 public class MoesifLogCounter implements CounterMetric {
     private static final Logger log = LoggerFactory.getLogger(MoesifLogCounter.class);
-    private final Map<String, String> properties;
     private String name;
     private MetricSchema schema;
+    private  EventQueue queue;
 
 
-    public MoesifLogCounter(String name, MetricSchema schema, Map<String, String> properties) {
+    public MoesifLogCounter(String name, EventQueue queue,MetricSchema schema) {
         this.name = name;
         this.schema = schema;
-        this.properties = properties;
+        this.queue = queue;
     }
 
     @Override
     public int incrementCount(MetricEventBuilder metricEventBuilder) throws MetricReportingException {
-        Map<String, Object> event = metricEventBuilder.build();
-        try {
-//            publish(event);
-        } catch (Throwable e) {
-            throw new RuntimeException("Moesif: Not publishing event " + e.toString());
-        }
+        queue.put(metricEventBuilder);
         return 0;
     }
 
