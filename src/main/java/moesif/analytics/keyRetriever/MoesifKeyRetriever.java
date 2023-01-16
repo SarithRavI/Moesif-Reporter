@@ -84,6 +84,11 @@ public class MoesifKeyRetriever {
         return response;
     }
 
+    // Delete moesif key from the internal map.
+    public void removeMoesifKeyFromMap(String orgID){
+        orgID_moesifKeyMap.remove(orgID);
+    }
+
     public void callListResource() throws IOException {
         URL obj = new URL(MoesifMicroserviceConstants.LIST_URL);
         String auth = "admin" + ":" + "admin";
