@@ -8,21 +8,20 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.wso2.am.analytics.publisher.client.EventHubClient;
 import org.wso2.am.analytics.publisher.reporter.MetricEventBuilder;
 import org.wso2.am.analytics.publisher.reporter.cloud.DefaultAnalyticsThreadFactory;
 
 public class EventQueue {
     private final BlockingQueue<MetricEventBuilder> eventQueue;
     private final ExecutorService publisherExecutorService;
-    private final ScheduledExecutorService flushingExecutorService;
     private  final AtomicInteger failureCount;
+    private  final MoesifKeyRetriever moesifKeyRetriever;
 
-    public EventQueue(int queueSize, int workerThreadCount, MoesifKeyRetriever moesifKeyRetriever ,int flushingDelay){
+    public EventQueue(int queueSize, int workerThreadCount, MoesifKeyRetriever moesifKeyRetriever){
+        this.moesifKeyRetriever = moesifKeyRetriever;
+
         publisherExecutorService = Executors.newFixedThreadPool(workerThreadCount,
                 new DefaultAnalyticsThreadFactory("Queue-Worker"));
-        flushingExecutorService = Executors.newScheduledThreadPool(workerThreadCount,
-                new DefaultAnalyticsThreadFactory("Queue-Flusher"));
         eventQueue = new LinkedBlockingQueue<>(queueSize);
         failureCount = new AtomicInteger(0);
 
@@ -41,5 +40,11 @@ public class EventQueue {
 //            log.warn("Task submission failed. Task queue might be full", e);
         }
 
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        publisherExecutorService.shutdown();
+        super.finalize();
     }
 }
