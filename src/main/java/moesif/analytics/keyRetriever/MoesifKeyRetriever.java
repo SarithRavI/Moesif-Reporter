@@ -15,8 +15,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import moesif.analytics.reporter.utils.MoesifKeyEntry;
 import moesif.analytics.reporter.utils.MoesifMicroserviceConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MoesifKeyRetriever {
+    private static final Logger log = LoggerFactory.getLogger(MoesifKeyRetriever.class);
     private static MoesifKeyRetriever moesifKeyRetriever;
     private ConcurrentHashMap<String, String> orgID_moesifKeyMap;
 
@@ -37,7 +40,7 @@ public class MoesifKeyRetriever {
             callListResource();
         } catch (IOException ex) {
             // TODO: Separate retry logic to a separate class.
-            System.out.println(ex.getMessage());
+            log.error("First attempt failed,retrying.",ex.getMessage());
             while (attempts > 0) {
                 attempts--;
                 try {
@@ -48,7 +51,7 @@ public class MoesifKeyRetriever {
                 try {
                     callListResource();
                 } catch (IOException e) {
-                    System.out.println("Retried and got: " + e.getMessage());
+                    log.error("Retry attempt failed and got: " + e.getMessage());
                 }
             }
         }
@@ -61,7 +64,7 @@ public class MoesifKeyRetriever {
             response = callDetailResource(orgID);
         } catch (IOException ex) {
             // TODO: Separate retry logic to a separate class.
-            System.out.println(ex.getMessage());
+            log.error("First attempt failed,retrying.",ex.getMessage());
             while (attempts > 0) {
                 attempts--;
                 try {
@@ -73,7 +76,7 @@ public class MoesifKeyRetriever {
                     response = callDetailResource(orgID);
                     return response;
                 } catch (IOException e) {
-                    System.out.println("Retried and got: " + e.getMessage());
+                    log.error("Retry attempt failed and got: " + e.getMessage());
                 }
             }
             response = null;

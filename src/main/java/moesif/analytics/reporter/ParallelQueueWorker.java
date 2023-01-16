@@ -18,10 +18,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import moesif.analytics.keyRetriever.MoesifKeyRetriever;
 import moesif.analytics.reporter.utils.MoesifConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.am.analytics.publisher.exception.MetricReportingException;
 import org.wso2.am.analytics.publisher.reporter.MetricEventBuilder;
 
 public class ParallelQueueWorker implements Runnable {
+    private  static  final Logger log = LoggerFactory.getLogger(ParallelQueueWorker.class);
     private BlockingQueue<MetricEventBuilder> eventQueue;
     private MoesifKeyRetriever keyRetriever;
 
@@ -41,12 +44,12 @@ public class ParallelQueueWorker implements Runnable {
                     publish(eventMap);
                 }
             } catch (MetricReportingException e) {
-//                log.error("Builder instance is not duly filled. Event building failed", e);
+                log.error("Builder instance is not duly filled. Event building failed", e);
                 continue;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } catch (Exception e) {
-//                log.error("Analytics event sending failed. Event will be dropped", e);
+                log.error("Analytics event sending failed. Event will be dropped", e);
             } catch (Throwable e) {
                 throw new RuntimeException(e);
             }
