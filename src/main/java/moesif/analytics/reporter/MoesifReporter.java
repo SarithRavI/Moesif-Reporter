@@ -15,13 +15,13 @@ import java.util.Map;
 
 public class MoesifReporter extends AbstractMetricReporter {
     private static final Logger log = LoggerFactory.getLogger(MoesifReporter.class);
-    private final Map<String,String> properties;
+    private final Map<String, String> properties;
     private final EventQueue eventQueue;
 
-    public MoesifReporter(Map<String, String> properties) throws MetricCreationException{
+    public MoesifReporter(Map<String, String> properties) throws MetricCreationException {
         super(properties);
         this.properties = properties;
-        MoesifKeyRetriever keyRetriever =  MoesifKeyRetriever.getInstance();
+        MoesifKeyRetriever keyRetriever = MoesifKeyRetriever.getInstance();
         int queueSize = MoesifConstants.DEFAULT_QUEUE_SIZE;
         int workerThreads = MoesifConstants.DEFAULT_WORKER_THREADS;
         if (properties.get(MoesifConstants.QUEUE_SIZE) != null) {
@@ -40,7 +40,7 @@ public class MoesifReporter extends AbstractMetricReporter {
 
     @Override
     public CounterMetric createCounter(String name, MetricSchema metricSchema) throws MetricCreationException {
-        MoesifLogCounter logCounterMetric = new MoesifLogCounter(name, eventQueue,metricSchema);
+        MoesifLogCounter logCounterMetric = new MoesifLogCounter(name, eventQueue, metricSchema);
 
         return logCounterMetric;
     }
@@ -49,7 +49,6 @@ public class MoesifReporter extends AbstractMetricReporter {
     protected TimerMetric createTimer(String s) {
         return null;
     }
-
 
 
 }

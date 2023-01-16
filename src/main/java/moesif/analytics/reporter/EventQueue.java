@@ -14,8 +14,8 @@ import org.wso2.am.analytics.publisher.reporter.cloud.DefaultAnalyticsThreadFact
 public class EventQueue {
     private final BlockingQueue<MetricEventBuilder> eventQueue;
     private final ExecutorService publisherExecutorService;
-    private  final AtomicInteger failureCount;
-    private  final MoesifKeyRetriever moesifKeyRetriever;
+    private final AtomicInteger failureCount;
+    private final MoesifKeyRetriever moesifKeyRetriever;
 
     public EventQueue(int queueSize, int workerThreadCount, MoesifKeyRetriever moesifKeyRetriever) {
         this.moesifKeyRetriever = moesifKeyRetriever;

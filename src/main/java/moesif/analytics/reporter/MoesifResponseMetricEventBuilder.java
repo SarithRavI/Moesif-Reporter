@@ -15,21 +15,21 @@ public class MoesifResponseMetricEventBuilder extends AbstractMetricEventBuilder
     private Map<String, Object> eventMap;
     private Boolean isBuilt = false;
 
-    public MoesifResponseMetricEventBuilder(){
+    public MoesifResponseMetricEventBuilder() {
         requiredAttributes = GenericInputValidator.getInstance().getEventProperties(MetricSchema.RESPONSE);
         eventMap = new HashMap<>();
     }
 
-    public MoesifResponseMetricEventBuilder(Map<String,Class> requiredAttributes){
+    public MoesifResponseMetricEventBuilder(Map<String, Class> requiredAttributes) {
         this.requiredAttributes = requiredAttributes;
         eventMap = new HashMap<>();
     }
 
     @Override
-    protected Map<String, Object> buildEvent(){
+    protected Map<String, Object> buildEvent() {
         if (!isBuilt) {
             // util function to filter required attributes
-            eventMap = EventMapAttributeFilter.getInstance().filter(eventMap,requiredAttributes);
+            eventMap = EventMapAttributeFilter.getInstance().filter(eventMap, requiredAttributes);
 
             isBuilt = true;
         }

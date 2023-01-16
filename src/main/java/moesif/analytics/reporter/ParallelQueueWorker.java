@@ -21,14 +21,15 @@ import moesif.analytics.reporter.utils.MoesifConstants;
 import org.wso2.am.analytics.publisher.exception.MetricReportingException;
 import org.wso2.am.analytics.publisher.reporter.MetricEventBuilder;
 
-public class ParallelQueueWorker implements Runnable{
+public class ParallelQueueWorker implements Runnable {
     private BlockingQueue<MetricEventBuilder> eventQueue;
     private MoesifKeyRetriever keyRetriever;
 
-    public ParallelQueueWorker(BlockingQueue<MetricEventBuilder> queue,MoesifKeyRetriever keyRetriever) {
+    public ParallelQueueWorker(BlockingQueue<MetricEventBuilder> queue, MoesifKeyRetriever keyRetriever) {
         this.eventQueue = queue;
         this.keyRetriever = keyRetriever;
     }
+
     public void run() {
 
         while (true) {
@@ -52,10 +53,11 @@ public class ParallelQueueWorker implements Runnable{
 
         }
     }
+
     public void publish(Map<String, Object> event) throws Throwable, MetricReportingException {
         // if the orgID_moesifKeyMap is empty refresh it.
-        ConcurrentHashMap<String,String> orgID_moesifKeyMap = keyRetriever.getMoesifKeyMap();
-        if(orgID_moesifKeyMap.isEmpty()){
+        ConcurrentHashMap<String, String> orgID_moesifKeyMap = keyRetriever.getMoesifKeyMap();
+        if (orgID_moesifKeyMap.isEmpty()) {
             keyRetriever.initOrRefreshOrgIDMoesifKeyMap();
         }
 
@@ -134,4 +136,4 @@ public class ParallelQueueWorker implements Runnable{
         return eventModel;
     }
 
-   }
+}
