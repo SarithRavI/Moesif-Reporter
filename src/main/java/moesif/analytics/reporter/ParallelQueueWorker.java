@@ -48,16 +48,16 @@ public class ParallelQueueWorker implements Runnable {
                 continue;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+            } catch(IOException e){
+                log.error("Analytics event sending through moesif client failed.", e);
             } catch (Exception e) {
                 log.error("Analytics event sending failed. Event will be dropped", e);
-            } catch (Throwable e) {
-                throw new RuntimeException(e);
             }
 
         }
     }
 
-    public void publish(Map<String, Object> event) throws Throwable, MetricReportingException {
+    public void publish(Map<String, Object> event) throws IOException, MetricReportingException {
         // if the orgID_moesifKeyMap is empty refresh it.
         ConcurrentHashMap<String, String> orgID_moesifKeyMap = keyRetriever.getMoesifKeyMap();
         if (orgID_moesifKeyMap.isEmpty()) {
@@ -81,7 +81,7 @@ public class ParallelQueueWorker implements Runnable {
         // init moesif client
         MoesifAPIClient client = new MoesifAPIClient(moesif_key);
         APIController api = client.getAPI();
-        api.createEvent(buildEventResponse(event));
+        api.createEventAsync(buildEventResponse(event),null);
 
     }
 
