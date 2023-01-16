@@ -1,5 +1,6 @@
 package moesif.analytics.reporter;
 
+import moesif.analytics.keyRetriever.MoesifKeyRetriever;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.am.analytics.publisher.exception.MetricCreationException;

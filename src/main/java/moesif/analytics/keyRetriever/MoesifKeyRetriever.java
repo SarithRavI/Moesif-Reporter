@@ -1,4 +1,4 @@
-package moesif.analytics.reporter;
+package moesif.analytics.keyRetriever;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;

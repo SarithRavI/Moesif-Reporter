@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import moesif.analytics.keyRetriever.MoesifKeyRetriever;
 import moesif.analytics.reporter.utils.MoesifConstants;
 import org.wso2.am.analytics.publisher.exception.MetricReportingException;
 import org.wso2.am.analytics.publisher.reporter.MetricEventBuilder;
