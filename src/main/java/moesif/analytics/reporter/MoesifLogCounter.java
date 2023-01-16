@@ -14,10 +14,10 @@ public class MoesifLogCounter implements CounterMetric {
     private static final Logger log = LoggerFactory.getLogger(MoesifLogCounter.class);
     private String name;
     private MetricSchema schema;
-    private  EventQueue queue;
+    private EventQueue queue;
 
 
-    public MoesifLogCounter(String name, EventQueue queue,MetricSchema schema) {
+    public MoesifLogCounter(String name, EventQueue queue, MetricSchema schema) {
         this.name = name;
         this.schema = schema;
         this.queue = queue;
@@ -44,13 +44,17 @@ public class MoesifLogCounter implements CounterMetric {
         switch (schema) {
             case RESPONSE:
             default:
-                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.RESPONSE));
+                return new MoesifResponseMetricEventBuilder(
+                        GenericInputValidator.getInstance().getEventProperties(MetricSchema.RESPONSE));
             case ERROR:
-                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.ERROR));
+                return new MoesifResponseMetricEventBuilder(
+                        GenericInputValidator.getInstance().getEventProperties(MetricSchema.ERROR));
             case CHOREO_RESPONSE:
-                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.CHOREO_RESPONSE));
+                return new MoesifResponseMetricEventBuilder(
+                        GenericInputValidator.getInstance().getEventProperties(MetricSchema.CHOREO_RESPONSE));
             case CHOREO_ERROR:
-                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.CHOREO_ERROR));
+                return new MoesifResponseMetricEventBuilder(
+                        GenericInputValidator.getInstance().getEventProperties(MetricSchema.CHOREO_ERROR));
         }
     }
 

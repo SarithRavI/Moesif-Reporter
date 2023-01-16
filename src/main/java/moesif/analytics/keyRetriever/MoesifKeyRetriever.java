@@ -15,30 +15,33 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import moesif.analytics.reporter.utils.MoesifKeyEntry;
 import moesif.analytics.reporter.utils.MoesifMicroserviceConstants;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MoesifKeyRetriever {
-    private ConcurrentHashMap<String, String> orgID_moesifKeyMap;
+    private static final Logger log = LoggerFactory.getLogger(MoesifKeyRetriever.class);
     private static MoesifKeyRetriever moesifKeyRetriever;
+    private ConcurrentHashMap<String, String> orgID_moesifKeyMap;
 
     private MoesifKeyRetriever() {
         orgID_moesifKeyMap = new ConcurrentHashMap();
     }
 
-    public static synchronized MoesifKeyRetriever getInstance(){
-        if(moesifKeyRetriever == null) {
+    public static synchronized MoesifKeyRetriever getInstance() {
+        if (moesifKeyRetriever == null) {
             return new MoesifKeyRetriever();
         }
         return moesifKeyRetriever;
     }
+
     public void initOrRefreshOrgIDMoesifKeyMap() {
         int attempts = MoesifMicroserviceConstants.NUM_RETRY_ATTEMPTS;
         try {
             callListResource();
         } catch (IOException ex) {
             // TODO: Separate retry logic to a separate class.
-            System.out.println(ex.getMessage());
-            while(attempts >0){
+            log.error("First attempt failed,retrying.",ex.getMessage());
+            while (attempts > 0) {
                 attempts--;
                 try {
                     Thread.sleep(MoesifMicroserviceConstants.TIME_TO_WAIT);
@@ -48,7 +51,7 @@ public class MoesifKeyRetriever {
                 try {
                     callListResource();
                 } catch (IOException e) {
-                    System.out.println("Retried and got: "+e.getMessage());
+                    log.error("Retry attempt failed and got: " + e.getMessage());
                 }
             }
         }
@@ -61,8 +64,8 @@ public class MoesifKeyRetriever {
             response = callDetailResource(orgID);
         } catch (IOException ex) {
             // TODO: Separate retry logic to a separate class.
-            System.out.println(ex.getMessage());
-            while(attempts >0){
+            log.error("First attempt failed,retrying.",ex.getMessage());
+            while (attempts > 0) {
                 attempts--;
                 try {
                     Thread.sleep(MoesifMicroserviceConstants.TIME_TO_WAIT);
@@ -73,14 +76,20 @@ public class MoesifKeyRetriever {
                     response = callDetailResource(orgID);
                     return response;
                 } catch (IOException e) {
-                    System.out.println("Retried and got: "+e.getMessage());
+                    log.error("Retry attempt failed and got: " + e.getMessage());
                 }
             }
             response = null;
         }
         return response;
     }
-    public  void callListResource() throws IOException {
+
+    // Delete moesif key from the internal map.
+    public void removeMoesifKeyFromMap(String orgID){
+        orgID_moesifKeyMap.remove(orgID);
+    }
+
+    public void callListResource() throws IOException {
         URL obj = new URL(MoesifMicroserviceConstants.LIST_URL);
         String auth = "";
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
@@ -107,12 +116,13 @@ public class MoesifKeyRetriever {
         }
     }
 
-    public  String callDetailResource(String orgID) throws IOException {
+    public String callDetailResource(String orgID) throws IOException {
         StringBuffer response = new StringBuffer();
         String url = MoesifMicroserviceConstants.DETAIL_URL + "?" + MoesifMicroserviceConstants.QUERY_PARAM + "=" +
                 orgID;
         URL obj = new URL(url);
         String auth = "";
+
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
         String authHeaderValue = "Basic " + encodedAuth;
 
@@ -137,7 +147,7 @@ public class MoesifKeyRetriever {
         return response.toString();
     }
 
-    private  void updateMoesifKey(String response) {
+    private void updateMoesifKey(String response) {
         Gson gson = new Gson();
         String json = response;
         MoesifKeyEntry newKey = gson.fromJson(json, MoesifKeyEntry.class);
@@ -145,10 +155,11 @@ public class MoesifKeyRetriever {
 
     }
 
-    private  void updateMap(String response) {
+    private void updateMap(String response) {
         Gson gson = new Gson();
         String json = response;
-        Type collectionType = new TypeToken<Collection<MoesifKeyEntry>>() {}.getType();
+        Type collectionType = new TypeToken<Collection<MoesifKeyEntry>>() {
+        }.getType();
         Collection<MoesifKeyEntry> newKeys = gson.fromJson(json, collectionType);
 
         for (MoesifKeyEntry entry : newKeys) {
@@ -156,7 +167,7 @@ public class MoesifKeyRetriever {
         }
     }
 
-    public ConcurrentHashMap<String,String> getMoesifKeyMap(){
+    public ConcurrentHashMap<String, String> getMoesifKeyMap() {
         return orgID_moesifKeyMap;
     }
 }

@@ -52,7 +52,7 @@ public class MoesifMetadataConstants {
 
     public static final String ERROR_CODE_KEY = "ErrorCode";
 
-    public static final String API_USER_NAME_KEY = WSO2_METADATA_PREFIX+ "userName";
+    public static final String API_USER_NAME_KEY = WSO2_METADATA_PREFIX + "userName";
 
-    public static final String API_CONTEXT_KEY = WSO2_METADATA_PREFIX+ "apiContext";
+    public static final String API_CONTEXT_KEY = WSO2_METADATA_PREFIX + "apiContext";
 }
