@@ -8,10 +8,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import moesif.analytics.keyRetriever.MoesifKeyRetriever;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.am.analytics.publisher.reporter.MetricEventBuilder;
 import org.wso2.am.analytics.publisher.reporter.cloud.DefaultAnalyticsThreadFactory;;
 
 public class EventQueue {
+    private static final Logger log = LoggerFactory.getLogger(EventQueue.class);
     private final BlockingQueue<MetricEventBuilder> eventQueue;
     private final ExecutorService publisherExecutorService;
     private final AtomicInteger failureCount;
@@ -34,13 +37,13 @@ public class EventQueue {
             if (!eventQueue.offer(builder)) {
                 int count = failureCount.incrementAndGet();
                 if (count == 1) {
-//                    log.error("Event queue is full. Starting to drop analytics events.");
+                    log.error("Event queue is full. Starting to drop analytics events.");
                 } else if (count % 1000 == 0) {
-//                    log.error("Event queue is full. " + count + " events dropped so far");
+                    log.error("Event queue is full. " + count + " events dropped so far");
                 }
             }
         } catch (RejectedExecutionException e) {
-//            log.warn("Task submission failed. Task queue might be full", e);
+            log.warn("Task submission failed. Task queue might be full", e);
         }
 
     }
