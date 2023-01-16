@@ -7,9 +7,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.wso2.am.analytics.publisher.reporter.MetricEventBuilder;
-import org.wso2.am.analytics.publisher.reporter.cloud.DefaultAnalyticsThreadFactory;
+import org.wso2.am.analytics.publisher.reporter.cloud.DefaultAnalyticsThreadFactory;;
 
 public class EventQueue {
     private final BlockingQueue<MetricEventBuilder> eventQueue;
@@ -17,15 +18,18 @@ public class EventQueue {
     private  final AtomicInteger failureCount;
     private  final MoesifKeyRetriever moesifKeyRetriever;
 
-    public EventQueue(int queueSize, int workerThreadCount, MoesifKeyRetriever moesifKeyRetriever){
+    public EventQueue(int queueSize, int workerThreadCount, MoesifKeyRetriever moesifKeyRetriever) {
         this.moesifKeyRetriever = moesifKeyRetriever;
 
         publisherExecutorService = Executors.newFixedThreadPool(workerThreadCount,
                 new DefaultAnalyticsThreadFactory("Queue-Worker"));
         eventQueue = new LinkedBlockingQueue<>(queueSize);
         failureCount = new AtomicInteger(0);
-
+        for (int i = 0; i < workerThreadCount; i++) {
+            publisherExecutorService.submit(new ParallelQueueWorker(eventQueue, moesifKeyRetriever));
+        }
     }
+
     public void put(MetricEventBuilder builder) {
         try {
             if (!eventQueue.offer(builder)) {
