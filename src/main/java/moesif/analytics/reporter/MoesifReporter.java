@@ -1,6 +1,7 @@
 package moesif.analytics.reporter;
 
 import moesif.analytics.keyRetriever.MoesifKeyRetriever;
+import moesif.analytics.reporter.utils.MoesifMicroserviceConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.am.analytics.publisher.exception.MetricCreationException;
@@ -21,7 +22,9 @@ public class MoesifReporter extends AbstractMetricReporter {
     public MoesifReporter(Map<String, String> properties) throws MetricCreationException {
         super(properties);
         this.properties = properties;
-        MoesifKeyRetriever keyRetriever = MoesifKeyRetriever.getInstance();
+        MoesifKeyRetriever keyRetriever =
+                MoesifKeyRetriever.getInstance(properties.get(MoesifMicroserviceConstants.GA_USERNAME_CONFIG_KEY),
+                        properties.get(MoesifMicroserviceConstants.GA_PWD_CONFIG_KEY));
         int queueSize = MoesifConstants.DEFAULT_QUEUE_SIZE;
         int workerThreads = MoesifConstants.DEFAULT_WORKER_THREADS;
         if (properties.get(MoesifConstants.QUEUE_SIZE) != null) {
