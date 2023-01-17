@@ -3,6 +3,8 @@ package moesif.analytics.reporter.utils;
 public class MoesifMicroserviceConstants {
     public final static String DETAIL_URL = "http://microservice:8080/moesif_key/";
     public final static String LIST_URL = "http://microservice:8080/moesif_key";
+    public static final String GA_USERNAME_CONFIG_KEY = "gaAuthUsername";
+    public static final String GA_PWD_CONFIG_KEY = "gaAuthPwd";
     public final static String CONTENT_TYPE = "application/json";
     public final static String QUERY_PARAM = "org_id";
     public final static int NUM_RETRY_ATTEMPTS = 3;

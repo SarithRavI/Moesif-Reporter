@@ -22,14 +22,18 @@ public class MoesifKeyRetriever {
     private static final Logger log = LoggerFactory.getLogger(MoesifKeyRetriever.class);
     private static MoesifKeyRetriever moesifKeyRetriever;
     private ConcurrentHashMap<String, String> orgID_moesifKeyMap;
+    private String gaAuthUsername;
+    private String gaAuthPwd;
 
-    private MoesifKeyRetriever() {
+    private MoesifKeyRetriever(String authUsername, String authPwd) {
+        this.gaAuthUsername = authUsername;
+        this.gaAuthPwd = authPwd;
         orgID_moesifKeyMap = new ConcurrentHashMap();
     }
 
-    public static synchronized MoesifKeyRetriever getInstance() {
+    public static synchronized MoesifKeyRetriever getInstance(String authUsername, String authPwd) {
         if (moesifKeyRetriever == null) {
-            return new MoesifKeyRetriever();
+            return new MoesifKeyRetriever(authUsername,authPwd);
         }
         return moesifKeyRetriever;
     }
@@ -91,7 +95,7 @@ public class MoesifKeyRetriever {
 
     public void callListResource() throws IOException {
         URL obj = new URL(MoesifMicroserviceConstants.LIST_URL);
-        String auth = "admin" + ":" + "admin";
+        String auth = gaAuthUsername+ ":" + gaAuthUsername;
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
         String authHeaderValue = "Basic " + encodedAuth;
 
@@ -121,7 +125,7 @@ public class MoesifKeyRetriever {
         String url = MoesifMicroserviceConstants.DETAIL_URL + "?" + MoesifMicroserviceConstants.QUERY_PARAM + "=" +
                 orgID;
         URL obj = new URL(url);
-        String auth = "admin" + ":" + "admin";
+        String auth = gaAuthUsername+ ":" + gaAuthUsername;
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
         String authHeaderValue = "Basic " + encodedAuth;
 
