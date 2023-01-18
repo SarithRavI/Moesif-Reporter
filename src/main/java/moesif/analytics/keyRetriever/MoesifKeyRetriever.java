@@ -3,6 +3,7 @@ package moesif.analytics.keyRetriever;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
+import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import moesif.analytics.exception.APICallingException;
 import moesif.analytics.reporter.utils.MoesifKeyEntry;
 import moesif.analytics.reporter.utils.MoesifMicroserviceConstants;
 import org.slf4j.Logger;
@@ -23,17 +25,18 @@ public class MoesifKeyRetriever {
     private static MoesifKeyRetriever moesifKeyRetriever;
     private ConcurrentHashMap<String, String> orgID_moesifKeyMap;
     private String gaAuthUsername;
-    private String gaAuthPwd;
+    private char[] gaAuthPwd;
 
     private MoesifKeyRetriever(String authUsername, String authPwd) {
+
         this.gaAuthUsername = authUsername;
-        this.gaAuthPwd = authPwd;
+        this.gaAuthPwd = authPwd.toCharArray();
         orgID_moesifKeyMap = new ConcurrentHashMap();
     }
 
     public static synchronized MoesifKeyRetriever getInstance(String authUsername, String authPwd) {
         if (moesifKeyRetriever == null) {
-            return new MoesifKeyRetriever(authUsername,authPwd);
+            return new MoesifKeyRetriever(authUsername, authPwd);
         }
         return moesifKeyRetriever;
     }
@@ -42,9 +45,9 @@ public class MoesifKeyRetriever {
         int attempts = MoesifMicroserviceConstants.NUM_RETRY_ATTEMPTS;
         try {
             callListResource();
-        } catch (IOException ex) {
+        } catch (IOException | APICallingException ex) {
             // TODO: Separate retry logic to a separate class.
-            log.error("First attempt failed,retrying.",ex.getMessage());
+            log.error("First attempt failed,retrying.", ex.getMessage());
             while (attempts > 0) {
                 attempts--;
                 try {
@@ -54,7 +57,7 @@ public class MoesifKeyRetriever {
                 }
                 try {
                     callListResource();
-                } catch (IOException e) {
+                } catch (IOException | APICallingException e) {
                     log.error("Retry attempt failed and got: " + e.getMessage());
                 }
             }
@@ -66,9 +69,9 @@ public class MoesifKeyRetriever {
         int attempts = MoesifMicroserviceConstants.NUM_RETRY_ATTEMPTS;
         try {
             response = callDetailResource(orgID);
-        } catch (IOException ex) {
+        } catch (IOException | APICallingException ex) {
             // TODO: Separate retry logic to a separate class.
-            log.error("First attempt failed,retrying.",ex.getMessage());
+            log.error("First attempt failed,retrying.", ex.getMessage());
             while (attempts > 0) {
                 attempts--;
                 try {
@@ -79,7 +82,7 @@ public class MoesifKeyRetriever {
                 try {
                     response = callDetailResource(orgID);
                     return response;
-                } catch (IOException e) {
+                } catch (IOException | APICallingException e) {
                     log.error("Retry attempt failed and got: " + e.getMessage());
                 }
             }
@@ -89,13 +92,19 @@ public class MoesifKeyRetriever {
     }
 
     // Delete moesif key from the internal map.
-    public void removeMoesifKeyFromMap(String orgID){
+    public void removeMoesifKeyFromMap(String orgID) {
         orgID_moesifKeyMap.remove(orgID);
     }
 
-    public void callListResource() throws IOException {
-        URL obj = new URL(MoesifMicroserviceConstants.LIST_URL);
-        String auth = gaAuthUsername+ ":" + gaAuthUsername;
+    public void callListResource() throws IOException, APICallingException {
+        URL obj;
+        try {
+            obj = new URL(MoesifMicroserviceConstants.LIST_URL);
+        } catch (MalformedURLException ex) {
+            log.error("Event will be dropped. Getting "+ex);
+            return;
+        }
+        String auth = gaAuthUsername + ":" + gaAuthPwd.toString();
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
         String authHeaderValue = "Basic " + encodedAuth;
 
@@ -103,6 +112,7 @@ public class MoesifKeyRetriever {
         con.setRequestMethod("GET");
         con.setRequestProperty("Authorization", authHeaderValue);
         con.setRequestProperty("Content-Type", MoesifMicroserviceConstants.CONTENT_TYPE);
+        con.setReadTimeout(MoesifMicroserviceConstants.REQUEST_READ_TIMEOUT);
         int responseCode = con.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK) {
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -115,17 +125,27 @@ public class MoesifKeyRetriever {
             in.close();
 
             updateMap(response.toString());
-        } else {
-            throw new IOException("Getting " + responseCode + " from the microservice");
+        } else if (responseCode != 400 && responseCode != 401 && responseCode != 403 && responseCode != 404 &&
+                responseCode != 409) {
+            con.disconnect();
+            throw new APICallingException("Getting " + responseCode + " from the microservice and retrying.");
         }
+        con.disconnect();
+
     }
 
-    public String callDetailResource(String orgID) throws IOException {
+    public String callDetailResource(String orgID) throws IOException, APICallingException {
         StringBuffer response = new StringBuffer();
         String url = MoesifMicroserviceConstants.DETAIL_URL + "?" + MoesifMicroserviceConstants.QUERY_PARAM + "=" +
                 orgID;
-        URL obj = new URL(url);
-        String auth = gaAuthUsername+ ":" + gaAuthUsername;
+        URL obj;
+        try {
+            obj = new URL(url);
+        } catch (MalformedURLException ex) {
+            log.error("Event will be dropped. Getting "+ex);
+            return null;
+        }
+        String auth = gaAuthUsername + ":" + gaAuthPwd.toString();
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
         String authHeaderValue = "Basic " + encodedAuth;
 
@@ -133,6 +153,7 @@ public class MoesifKeyRetriever {
         con.setRequestMethod("GET");
         con.setRequestProperty("Content-Type", MoesifMicroserviceConstants.CONTENT_TYPE);
         con.setRequestProperty("Authorization", authHeaderValue);
+        con.setReadTimeout(MoesifMicroserviceConstants.REQUEST_READ_TIMEOUT);
         int responseCode = con.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK) {
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -144,9 +165,12 @@ public class MoesifKeyRetriever {
             in.close();
 
             updateMoesifKey(response.toString());
-        } else {
-            throw new IOException("Getting " + responseCode + " from the microservice");
+        } else if (responseCode != 400 && responseCode != 401 && responseCode != 403 && responseCode != 404 &&
+                responseCode != 409) {
+            con.disconnect();
+            throw new APICallingException("Getting " + responseCode + " from the microservice and retrying.");
         }
+        con.disconnect();
         return response.toString();
     }
 
