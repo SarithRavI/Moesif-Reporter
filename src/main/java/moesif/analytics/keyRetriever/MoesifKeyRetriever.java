@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
-import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
@@ -26,19 +25,17 @@ public class MoesifKeyRetriever {
     private static MoesifKeyRetriever moesifKeyRetriever;
     private ConcurrentHashMap<String, String> orgID_moesifKeyMap;
     private String gaAuthUsername;
-    // use char array
-    private String gaAuthPwd;
+    private char[] gaAuthPwd;
 
     private MoesifKeyRetriever(String authUsername, String authPwd) {
 
         this.gaAuthUsername = authUsername;
-        this.gaAuthPwd = authPwd;
+        this.gaAuthPwd = authPwd.toCharArray();
         orgID_moesifKeyMap = new ConcurrentHashMap();
     }
 
     public static synchronized MoesifKeyRetriever getInstance(String authUsername, String authPwd) {
         if (moesifKeyRetriever == null) {
-            // use sync block
             return new MoesifKeyRetriever(authUsername, authPwd);
         }
         return moesifKeyRetriever;
@@ -107,7 +104,7 @@ public class MoesifKeyRetriever {
             log.error("Event will be dropped. Getting "+ex);
             return;
         }
-        String auth = gaAuthUsername + ":" + gaAuthPwd;
+        String auth = gaAuthUsername + ":" + gaAuthPwd.toString();
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
         String authHeaderValue = "Basic " + encodedAuth;
 
@@ -115,6 +112,7 @@ public class MoesifKeyRetriever {
         con.setRequestMethod("GET");
         con.setRequestProperty("Authorization", authHeaderValue);
         con.setRequestProperty("Content-Type", MoesifMicroserviceConstants.CONTENT_TYPE);
+        con.setReadTimeout(MoesifMicroserviceConstants.REQUEST_READ_TIMEOUT);
         int responseCode = con.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK) {
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -147,7 +145,7 @@ public class MoesifKeyRetriever {
             log.error("Event will be dropped. Getting "+ex);
             return null;
         }
-        String auth = gaAuthUsername + ":" + gaAuthPwd;
+        String auth = gaAuthUsername + ":" + gaAuthPwd.toString();
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
         String authHeaderValue = "Basic " + encodedAuth;
 
@@ -155,6 +153,7 @@ public class MoesifKeyRetriever {
         con.setRequestMethod("GET");
         con.setRequestProperty("Content-Type", MoesifMicroserviceConstants.CONTENT_TYPE);
         con.setRequestProperty("Authorization", authHeaderValue);
+        con.setReadTimeout(MoesifMicroserviceConstants.REQUEST_READ_TIMEOUT);
         int responseCode = con.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK) {
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
