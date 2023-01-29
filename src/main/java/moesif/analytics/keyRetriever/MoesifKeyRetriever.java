@@ -101,7 +101,7 @@ public class MoesifKeyRetriever {
         moesifKey_moesifClientMap.remove(moesifKey);
     }
 
-    public void callListResource() throws IOException, APICallingException {
+    private void callListResource() throws IOException, APICallingException {
         URL obj;
         try {
             obj = new URL(MoesifMicroserviceConstants.LIST_URL);
@@ -139,7 +139,7 @@ public class MoesifKeyRetriever {
 
     }
 
-    public String callDetailResource(String orgID) throws IOException, APICallingException {
+    private String callDetailResource(String orgID) throws IOException, APICallingException {
         StringBuffer response = new StringBuffer();
         String url = MoesifMicroserviceConstants.DETAIL_URL + "?" + MoesifMicroserviceConstants.QUERY_PARAM + "=" +
                 orgID;
