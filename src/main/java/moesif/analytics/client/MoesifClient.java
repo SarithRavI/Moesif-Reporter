@@ -55,9 +55,7 @@ public class MoesifClient {
 
         APICallBack<HttpResponse> callBack = new APICallBack<>() {
             public void onSuccess(HttpContext context, HttpResponse response) {
-                //debug log
-                // with context
-                log.info("Successfully published event.");
+                log.debug("Successfully published event.");
             }
 
             public void onFailure(HttpContext context, Throwable error) {
