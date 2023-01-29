@@ -97,7 +97,7 @@ public class MoesifKeyRetriever {
 
     // Delete moesif key from the internal map.
     public void removeMoesifKeyFromMap(String orgID) {
-        String moesifKey =orgID_moesifKeyMap.remove(orgID);
+        String moesifKey = orgID_moesifKeyMap.remove(orgID);
         moesifKey_moesifClientMap.remove(moesifKey);
     }
 
@@ -106,7 +106,7 @@ public class MoesifKeyRetriever {
         try {
             obj = new URL(MoesifMicroserviceConstants.LIST_URL);
         } catch (MalformedURLException ex) {
-            log.error("Event will be dropped. Getting "+ex);
+            log.error("Event will be dropped. Getting " + ex);
             return;
         }
         String auth = gaAuthUsername + ":" + gaAuthPwd.toString();
@@ -130,12 +130,14 @@ public class MoesifKeyRetriever {
             in.close();
 
             updateMap(response.toString());
-        } else if (responseCode != 400 && responseCode != 401 && responseCode != 403 && responseCode != 404 &&
-                responseCode != 409) {
+            con.disconnect();
+        } else if (responseCode >= 400 && responseCode < 500) {
+            con.disconnect();
+            log.error("Event will be dropped. Getting " + responseCode);
+        } else {
             con.disconnect();
             throw new APICallingException("Getting " + responseCode + " from the microservice and retrying.");
         }
-        con.disconnect();
 
     }
 
@@ -147,7 +149,7 @@ public class MoesifKeyRetriever {
         try {
             obj = new URL(url);
         } catch (MalformedURLException ex) {
-            log.error("Event will be dropped. Getting "+ex);
+            log.error("Event will be dropped. Getting " + ex);
             return null;
         }
         String auth = gaAuthUsername + ":" + gaAuthPwd.toString();
@@ -170,12 +172,15 @@ public class MoesifKeyRetriever {
             in.close();
 
             updateMoesifKey(response.toString());
-        } else if (responseCode != 400 && responseCode != 401 && responseCode != 403 && responseCode != 404 &&
-                responseCode != 409) {
+            con.disconnect();
+        } else if (responseCode >= 400 && responseCode < 500) {
+            con.disconnect();
+            log.error("Event will be dropped. Getting " + responseCode);
+            return null;
+        } else {
             con.disconnect();
             throw new APICallingException("Getting " + responseCode + " from the microservice and retrying.");
         }
-        con.disconnect();
         return response.toString();
     }
 
@@ -208,7 +213,7 @@ public class MoesifKeyRetriever {
         return orgID_moesifKeyMap;
     }
 
-    public MoesifAPIClient getMoesifClient(String moesifKey){
-        return  moesifKey_moesifClientMap.get(moesifKey);
+    public MoesifAPIClient getMoesifClient(String moesifKey) {
+        return moesifKey_moesifClientMap.get(moesifKey);
     }
 }
