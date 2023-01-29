@@ -31,6 +31,32 @@ public class MoesifClient {
     public MoesifClient(MoesifKeyRetriever keyRetriever){
         this.keyRetriever = keyRetriever;
     }
+
+    private  void doRetry(String org_id, Map<String,Object> event){
+        Integer currentAttempt = ClientContextHolder.publishAttempts.get();
+
+        if(currentAttempt > 0){
+            if (currentAttempt == MoesifMicroserviceConstants.NUM_RETRY_ATTEMPTS_PUBLISH){
+                // on failure remove the respective moesif key from the map.
+                // this will result in a call to the microservice to retrieve the key.
+                // This is enough to happen only at the first attempt.
+                keyRetriever.removeMoesifKeyFromMap(org_id);
+            }
+            currentAttempt-=1;
+            ClientContextHolder.publishAttempts.set(currentAttempt);
+            try {
+                Thread.sleep(MoesifMicroserviceConstants.TIME_TO_WAIT_PUBLISH);
+                publish(event);
+            } catch (MetricReportingException e) {
+                log.error("Failing retry attempt at Moesif client",e);
+            } catch (InterruptedException e) {
+                log.error("Failing retry attempt at Moesif client",e);
+            }
+        }
+        else if(currentAttempt == 0){
+            log.error("Failed all retrying attempts. Event will be dropped");
+        }
+    }
     public void publish(Map<String, Object> event) throws MetricReportingException {
         ConcurrentHashMap<String, String> orgID_moesifKeyMap = keyRetriever.getMoesifKeyMap();
         if (orgID_moesifKeyMap.isEmpty()) {
@@ -55,33 +81,33 @@ public class MoesifClient {
 
         APICallBack<HttpResponse> callBack = new APICallBack<>() {
             public void onSuccess(HttpContext context, HttpResponse response) {
-                log.debug("Successfully published event.");
+                int statusCode = context.getResponse().getStatusCode();
+                if (statusCode ==200){
+                    log.debug("Event successfully published.");
+                }
+                else if(statusCode>=400 && statusCode<500){
+                    log.error("Event publishing failed. Moesif returned "+statusCode);
+                }
+                else{
+                    log.error("Event publishing failed.Retrying.");
+                    doRetry(org_id,event);
+                }
             }
 
             public void onFailure(HttpContext context, Throwable error) {
-                Integer currentAttempt = ClientContextHolder.publishAttempts.get();
+                int statusCode = context.getResponse().getStatusCode();
 
-                if(currentAttempt > 0){
-                    if (currentAttempt == MoesifMicroserviceConstants.NUM_RETRY_ATTEMPTS_PUBLISH){
-                        // on failure remove the respective moesif key from the map.
-                        // this will result in a call to the microservice to retrieve the key.
-                        // This is enough to happen only at the first attempt.
-                        keyRetriever.removeMoesifKeyFromMap(org_id);
-                    }
-                    currentAttempt-=1;
-                    ClientContextHolder.publishAttempts.set(currentAttempt);
-                    try {
-                        Thread.sleep(MoesifMicroserviceConstants.TIME_TO_WAIT_PUBLISH);
-                        publish(event);
-                    } catch (MetricReportingException e) {
-                        log.error("Failing retry attempt at Moesif client",e);
-                    } catch (InterruptedException e) {
-                        log.error("Failing retry attempt at Moesif client",e);
-                    }
+                if(statusCode>=400 && statusCode<500){
+                    log.error("Event publishing failed. Moesif returned "+statusCode);
                 }
-                else if(currentAttempt == 0){
-                    log.error("Failed all retrying attempts. Event will be dropped");
+                else if (error != null){
+                    log.error("Event publishing failed."+ error.getMessage() );
                 }
+                else{
+                    log.error("Event publishing failed.Retrying.");
+                    doRetry(org_id,event);
+                }
+
             }
         };
         try {
