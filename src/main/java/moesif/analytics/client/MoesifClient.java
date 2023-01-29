@@ -50,11 +50,13 @@ public class MoesifClient {
         }
 
         // init moesif api client
-        MoesifAPIClient client = new MoesifAPIClient(moesif_key);
+        MoesifAPIClient client = keyRetriever.getMoesifClient(moesif_key);
         APIController api = client.getAPI();
 
         APICallBack<HttpResponse> callBack = new APICallBack<>() {
             public void onSuccess(HttpContext context, HttpResponse response) {
+                //debug log
+                // with context
                 log.info("Successfully published event.");
             }
 
