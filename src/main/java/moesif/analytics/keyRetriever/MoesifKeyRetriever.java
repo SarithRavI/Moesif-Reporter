@@ -2,6 +2,7 @@ package moesif.analytics.keyRetriever;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.moesif.api.MoesifAPIClient;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
@@ -24,6 +25,8 @@ public class MoesifKeyRetriever {
     private static final Logger log = LoggerFactory.getLogger(MoesifKeyRetriever.class);
     private static MoesifKeyRetriever moesifKeyRetriever;
     private ConcurrentHashMap<String, String> orgID_moesifKeyMap;
+
+    private ConcurrentHashMap<String, MoesifAPIClient> moesifKey_moesifClientMap;
     private String gaAuthUsername;
     private char[] gaAuthPwd;
 
@@ -32,6 +35,7 @@ public class MoesifKeyRetriever {
         this.gaAuthUsername = authUsername;
         this.gaAuthPwd = authPwd.toCharArray();
         orgID_moesifKeyMap = new ConcurrentHashMap();
+        moesifKey_moesifClientMap = new ConcurrentHashMap();
     }
 
     public static synchronized MoesifKeyRetriever getInstance(String authUsername, String authPwd) {
@@ -93,7 +97,8 @@ public class MoesifKeyRetriever {
 
     // Delete moesif key from the internal map.
     public void removeMoesifKeyFromMap(String orgID) {
-        orgID_moesifKeyMap.remove(orgID);
+        String moesifKey =orgID_moesifKeyMap.remove(orgID);
+        moesifKey_moesifClientMap.remove(moesifKey);
     }
 
     public void callListResource() throws IOException, APICallingException {
@@ -178,8 +183,10 @@ public class MoesifKeyRetriever {
         Gson gson = new Gson();
         String json = response;
         MoesifKeyEntry newKey = gson.fromJson(json, MoesifKeyEntry.class);
-        orgID_moesifKeyMap.put(newKey.getOrganization_id(), newKey.getMoesif_key());
-
+        String orgID = newKey.getOrganization_id();
+        String moesifKey = newKey.getMoesif_key();
+        orgID_moesifKeyMap.put(orgID, moesifKey);
+        moesifKey_moesifClientMap.put(moesifKey, new MoesifAPIClient(moesifKey));
     }
 
     private void updateMap(String response) {
@@ -190,11 +197,18 @@ public class MoesifKeyRetriever {
         Collection<MoesifKeyEntry> newKeys = gson.fromJson(json, collectionType);
 
         for (MoesifKeyEntry entry : newKeys) {
-            orgID_moesifKeyMap.put(entry.getOrganization_id(), entry.getMoesif_key());
+            String orgID = entry.getOrganization_id();
+            String moesifKey = entry.getMoesif_key();
+            orgID_moesifKeyMap.put(orgID, moesifKey);
+            moesifKey_moesifClientMap.put(moesifKey, new MoesifAPIClient(moesifKey));
         }
     }
 
     public ConcurrentHashMap<String, String> getMoesifKeyMap() {
         return orgID_moesifKeyMap;
+    }
+
+    public MoesifAPIClient getMoesifClient(String moesifKey){
+        return  moesifKey_moesifClientMap.get(moesifKey);
     }
 }
